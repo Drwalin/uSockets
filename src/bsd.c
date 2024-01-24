@@ -89,7 +89,7 @@ struct mmsghdr {
 
     // while we do not get error, send next
 
-    for (int i = 0; i < LIBUS_UDP_MAX_NUM; i++) {
+    for (int i = 0; i < vlen; i++) {
         // need to support ipv6 addresses also!
         int ret = sendto(fd, packet_buffer->buf[i], packet_buffer->len[i], flags, (struct sockaddr *)&packet_buffer->addr[i], sizeof(struct sockaddr_in));
 
@@ -102,7 +102,7 @@ struct mmsghdr {
         //printf("sendto: %d\n", ret);
     }
 
-    return LIBUS_UDP_MAX_NUM; // one message
+    return vlen; // one message
 #else
     return sendmmsg(fd, (struct mmsghdr *)msgvec, vlen, flags | MSG_NOSIGNAL);
 #endif
@@ -113,7 +113,7 @@ int bsd_recvmmsg(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int vlen, in
     struct us_internal_udp_packet_buffer *packet_buffer = (struct us_internal_udp_packet_buffer *) msgvec;
 
 
-    for (int i = 0; i < LIBUS_UDP_MAX_NUM; i++) {
+    for (int i = 0; i < vlen; i++) {
         socklen_t addr_len = sizeof(struct sockaddr_storage);
         int ret = recvfrom(fd, packet_buffer->buf[i], LIBUS_UDP_MAX_SIZE, flags, (struct sockaddr *)&packet_buffer->addr[i], &addr_len);
 
@@ -124,7 +124,7 @@ int bsd_recvmmsg(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int vlen, in
         packet_buffer->len[i] = ret;
     }
 
-    return LIBUS_UDP_MAX_NUM;
+    return vlen;
 #else
     // we need to set controllen for ip packet
     for (int i = 0; i < vlen; i++) {
@@ -204,10 +204,10 @@ void bsd_udp_buffer_set_packet_payload(struct us_udp_packet_buffer_t *send_buf, 
 #if defined(_WIN32) || defined(__APPLE__)
     struct us_internal_udp_packet_buffer *packet_buffer = (struct us_internal_udp_packet_buffer *) send_buf;
 
-    memcpy(packet_buffer->buf[index], payload, length);
+    memcpy(packet_buffer->buf[index]+offset, payload, length);
     memcpy(&packet_buffer->addr[index], peer_addr, sizeof(struct sockaddr_storage));
 
-    packet_buffer->len[index] = length;
+    packet_buffer->len[index] = length + offset;
 #else
     //printf("length: %d, offset: %d\n", length, offset);
 
