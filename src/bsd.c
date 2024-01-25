@@ -53,7 +53,7 @@ struct us_internal_udp_packet_buffer {
 };
 
 /* We need to emulate sendmmsg, recvmmsg on platform who don't have it */
-int bsd_sendmmsg(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int vlen, int flags) {
+int bsd_sendmmsg_range(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int start, unsigned int end, int flags) {
 #if defined(__APPLE__)
 
 struct mmsghdr {
@@ -63,11 +63,11 @@ struct mmsghdr {
 
     struct mmsghdr *hdrs = (struct mmsghdr *) msgvec;
 
-    for (int i = 0; i < vlen; i++) {
+    for (int i = start; i < end; i++) {
         int ret = sendmsg(fd, &hdrs[i].msg_hdr, flags);
         if (ret == -1) {
-            if (i) {
-                return i;
+            if (i != start) {
+                return i-start;
             } else {
                 return -1;
             }
@@ -76,7 +76,7 @@ struct mmsghdr {
         }
     }
 
-    return vlen;
+    return end-start;
 
 #elif defined(_WIN32)
 
@@ -89,23 +89,28 @@ struct mmsghdr {
 
     // while we do not get error, send next
 
-    for (int i = 0; i < vlen; i++) {
+    for (int i = start; i < end; i++) {
         // need to support ipv6 addresses also!
         int ret = sendto(fd, packet_buffer->buf[i], packet_buffer->len[i], flags, (struct sockaddr *)&packet_buffer->addr[i], sizeof(struct sockaddr_in));
 
         if (ret == -1) {
             // if we fail then we need to buffer up, no that's not our problem
             // we do need to register poll out though and have a callback for it
-            return i;
+            return i-start;
         }
 
         //printf("sendto: %d\n", ret);
     }
 
-    return vlen; // one message
+    return end-start; // one message
 #else
-    return sendmmsg(fd, (struct mmsghdr *)msgvec, vlen, flags | MSG_NOSIGNAL);
+    return sendmmsg(fd, ((struct mmsghdr *)msgvec)+start, end-start, flags | MSG_NOSIGNAL);
 #endif
+}
+
+
+int bsd_sendmmsg(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int vlen, int flags) {
+	return bsd_sendmmsg_range(fd, msgvec, 0, vlen, flags);
 }
 
 int bsd_recvmmsg(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int vlen, int flags, void *timeout) {

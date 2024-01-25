@@ -55,6 +55,7 @@ struct bsd_addr_t {
     int port;
 };
 
+int bsd_sendmmsg_range(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int start, unsigned int end, int flags);
 int bsd_sendmmsg(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int vlen, int flags);
 int bsd_recvmmsg(LIBUS_SOCKET_DESCRIPTOR fd, void *msgvec, unsigned int vlen, int flags, void *timeout);
 int bsd_udp_packet_buffer_payload_length(void *msgvec, int index);

@@ -45,12 +45,16 @@ int us_udp_packet_buffer_payload_length(struct us_udp_packet_buffer_t *buf, int 
 }
 
 // what should we return? number of sent datagrams?
-int us_udp_socket_send(struct us_udp_socket_t *s, struct us_udp_packet_buffer_t *buf, int num) {
+int us_udp_socket_send_range(struct us_udp_socket_t *s, struct us_udp_packet_buffer_t *buf, int start, int end) {
     int fd = us_poll_fd((struct us_poll_t *) s);
 
     // we need to poll out if we failed
 
-    return bsd_sendmmsg(fd, buf, num, 0);
+    return bsd_sendmmsg_range(fd, buf, start, end, 0);
+}
+
+int us_udp_socket_send(struct us_udp_socket_t *s, struct us_udp_packet_buffer_t *buf, int num) {
+	return us_udp_socket_send_range(s, buf, 0, num);
 }
 
 int us_udp_socket_receive(struct us_udp_socket_t *s, struct us_udp_packet_buffer_t *buf) {
