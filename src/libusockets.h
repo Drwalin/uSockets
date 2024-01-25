@@ -85,6 +85,7 @@ int us_udp_socket_receive(struct us_udp_socket_t *s, struct us_udp_packet_buffer
 void us_udp_buffer_set_packet_payload(struct us_udp_packet_buffer_t *send_buf, int index, int offset, void *payload, int length, void *peer_addr);
 
 int us_udp_socket_send(struct us_udp_socket_t *s, struct us_udp_packet_buffer_t *buf, int num);
+int us_udp_socket_send_range(struct us_udp_socket_t *s, struct us_udp_packet_buffer_t *buf, int start, int end);
 
 /* Allocates a packet buffer that is reuable per thread. Mutated by us_udp_socket_receive. */
 struct us_udp_packet_buffer_t *us_create_udp_packet_buffer();
