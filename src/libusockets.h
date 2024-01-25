@@ -108,6 +108,9 @@ void *us_udp_socket_user(struct us_udp_socket_t *s);
 /* Binds the UDP socket to an interface and port */
 int us_udp_socket_bind(struct us_udp_socket_t *s, const char *hostname, unsigned int port);
 
+/* Returns the loop for this udp socket */
+struct us_loop_t *us_udp_socket_loop(struct us_udp_socket_t *socket);
+
 /* Public interfaces for timers */
 
 /* Create a new high precision, low performance timer. May fail and return null */
