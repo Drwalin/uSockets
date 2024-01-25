@@ -152,8 +152,7 @@ struct us_udp_socket_t *us_create_udp_socket(struct us_loop_t *loop, struct us_u
     return (struct us_udp_socket_t *) cb;
 }
 
-void us_close_and_free_udp_socket(struct us_udp_socket_t *socket, int free_receive_buffer)
-{
+void us_close_and_free_udp_socket(struct us_udp_socket_t *socket, int free_receive_buffer) {
 	struct us_poll_t *poll = (struct us_poll_t *) socket;
 	struct us_internal_udp_t *cb = (struct us_internal_udp_t *) poll;
 	
@@ -166,6 +165,11 @@ void us_close_and_free_udp_socket(struct us_udp_socket_t *socket, int free_recei
 	us_poll_stop(poll, loop);
 	us_poll_free(poll, loop);
 	bsd_close_socket(fd);
+}
+
+struct us_loop_t *us_udp_socket_loop(struct us_udp_socket_t *socket) {
+    struct us_internal_udp_t *cb = (struct us_internal_udp_t *) socket;
+	return cb->cb.loop;
 }
 
 #endif
