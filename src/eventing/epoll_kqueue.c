@@ -153,6 +153,49 @@ void us_loop_run(struct us_loop_t *loop) {
     }
 }
 
+void us_loop_run_once(struct us_loop_t *loop) {
+    if (loop->num_polls == 0) {
+        return;
+    }
+
+    /* Emit pre callback */
+    us_internal_loop_pre(loop);
+
+    /* Fetch ready polls */
+#ifdef LIBUS_USE_EPOLL
+    loop->num_ready_polls = epoll_wait(loop->fd, loop->ready_polls, 1024, 0);
+#else
+    struct timespec timeout{0, 0};
+    loop->num_ready_polls = kevent(loop->fd, NULL, 0, loop->ready_polls, 1024, &timeout);
+#endif
+
+    /* Iterate ready polls, dispatching them by type */
+    for (loop->current_ready_poll = 0; loop->current_ready_poll < loop->num_ready_polls; loop->current_ready_poll++) {
+        struct us_poll_t *poll = GET_READY_POLL(loop, loop->current_ready_poll);
+        /* Any ready poll marked with nullptr will be ignored */
+        if (poll) {
+#ifdef LIBUS_USE_EPOLL
+            int events = loop->ready_polls[loop->current_ready_poll].events;
+            int error = loop->ready_polls[loop->current_ready_poll].events & (EPOLLERR | EPOLLHUP);
+#else
+            /* EVFILT_READ, EVFILT_TIME, EVFILT_USER are all mapped to LIBUS_SOCKET_READABLE */
+            int events = LIBUS_SOCKET_READABLE;
+            if (loop->ready_polls[loop->current_ready_poll].filter == EVFILT_WRITE) {
+                events = LIBUS_SOCKET_WRITABLE;
+            }
+            int error = loop->ready_polls[loop->current_ready_poll].flags & (EV_ERROR | EV_EOF);
+#endif
+            /* Always filter all polls by what they actually poll for (callback polls always poll for readable) */
+            events &= us_poll_events(poll);
+            if (events || error) {
+                us_internal_dispatch_ready_poll(poll, error, events);
+            }
+        }
+    }
+    /* Emit post callback */
+    us_internal_loop_post(loop);
+}
+
 void us_internal_loop_update_pending_ready_polls(struct us_loop_t *loop, struct us_poll_t *old_poll, struct us_poll_t *new_poll, int old_events, int new_events) {
 #ifdef LIBUS_USE_EPOLL
     /* Epoll only has one ready poll per poll */
