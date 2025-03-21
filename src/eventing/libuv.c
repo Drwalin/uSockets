@@ -192,6 +192,10 @@ void us_loop_run(struct us_loop_t *loop) {
     uv_run(loop->uv_loop, UV_RUN_DEFAULT);
 }
 
+void us_loop_run_once(struct us_loop_t *loop) {
+    uv_run(loop->uv_loop, UV_RUN_NOWAIT);
+}
+
 struct us_poll_t *us_create_poll(struct us_loop_t *loop, int fallthrough, unsigned int ext_size) {
     struct us_poll_t *p = (struct us_poll_t *) malloc(sizeof(struct us_poll_t) + ext_size);
     p->uv_p = malloc(sizeof(uv_poll_t));
