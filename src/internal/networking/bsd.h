@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+// Modifications Copyright (C) 2024 Marek Zalewski aka Drwalin
+
 #ifndef BSD_H
 #define BSD_H
 
