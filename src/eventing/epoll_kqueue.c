@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+// Modifications Copyright (C) 20245Marek Zalewski aka Drwalin
+
 #include "libusockets.h"
 #include "internal/internal.h"
 #include <stdlib.h>

@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+// Modifications Copyright (C) 2024-2025 Marek Zalewski aka Drwalin
+
 #ifndef LIBUSOCKETS_H
 #define LIBUSOCKETS_H
 

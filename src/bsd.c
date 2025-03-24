@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+// Modifications Copyright (C) 2024 Marek Zalewski aka Drwalin
+
 /* Todo: this file should lie in networking/bsd.c */
 
 #define __APPLE_USE_RFC_3542

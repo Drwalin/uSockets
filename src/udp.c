@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+// Modifications Copyright (C) 2024 Marek Zalewski aka Drwalin
+
 #ifndef LIBUS_USE_IO_URING
 
 #include "libusockets.h"
